@@ -21,5 +21,8 @@ public interface CDLoader extends Loader<CDrec> {
 	 */
 	@Override
 	public List<CDrec> load(InputStream stream, String filename) throws IOException;
+
+	//@Override 
+	public List<CDrec> load(InputStream is, String fileName, boolean isSimulationFile) throws IOException;
 	
 }

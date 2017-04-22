@@ -30,7 +30,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class CDCurvePlotDialog extends JDialog {
 	private static final Translator trans = Application.getTranslator();
 	
-	public CDCurvePlotDialog(List<CDrec> CDrec, Window parent) {
+	public CDCurvePlotDialog(List<CDrec> CDrec, Window parent, boolean isSimulationFile) {
 		super(parent, "CD Override Curve", ModalityType.APPLICATION_MODAL);
 		
 		JPanel panel = new JPanel(new MigLayout("fill"));
@@ -75,19 +75,25 @@ public class CDCurvePlotDialog extends JDialog {
 		// Create the plot data set
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		
-		dataset.addSeries(generateSeries(CDrec, true, "CD Accelerating"));
+		if (isSimulationFile) { // For a simulation file there are separate Thrusting and Coasting curves
+			dataset.addSeries(generateSeries(CDrec, true, "CD Thrusting"));
+		} else {
+			dataset.addSeries(generateSeries(CDrec, true, "CD Override"));
+		}
 		renderer.setSeriesStroke(1, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
 		renderer.setSeriesPaint(1, ThrustCurveMotorSelectionPanel.getColor(1));
 		renderer.setSeriesShape(1, new Rectangle());
-		
-		dataset.addSeries(generateSeries(CDrec, false, "CD Decelerating"));
-		renderer.setSeriesStroke(2, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-		renderer.setSeriesPaint(2, ThrustCurveMotorSelectionPanel.getColor(2));
-		renderer.setSeriesShape(2, new Rectangle());
-		
+
+		if (isSimulationFile) {
+			dataset.addSeries(generateSeries(CDrec, false, "CD Coasting"));
+			renderer.setSeriesStroke(2, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+			renderer.setSeriesPaint(2, ThrustCurveMotorSelectionPanel.getColor(2));
+			renderer.setSeriesShape(2, new Rectangle());
+		}
+			
 		plot.setDataset(dataset);
 		
-		panel.add(chartPanel, "width 600:600:, height 400:400:, grow, wrap");
+		panel.add(chartPanel, "width 600:600:, height 400:400:, grow 200, wrap");
 		
 
 		// Close button
@@ -108,11 +114,11 @@ public class CDCurvePlotDialog extends JDialog {
 	}
 	
 	
-	private XYSeries generateSeries(List<CDrec> CDrec, boolean accelerating, String name) {
+	private XYSeries generateSeries(List<CDrec> CDrec, boolean isThrusting, String name) {
 		XYSeries series = new XYSeries(name);
 		
 		for (int j = 0; j < CDrec.size(); j++) {
-			if (CDrec.get(j).ACCELERATING == accelerating) {
+			if (CDrec.get(j).THRUSTING == isThrusting) {
 				series.add(CDrec.get(j).MACH, CDrec.get(j).CD);
 			}
 		}

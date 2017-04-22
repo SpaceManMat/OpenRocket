@@ -26,32 +26,34 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 	
 	private static final Logger log = LoggerFactory.getLogger(CDLoaderHelper.class);
 	
-	private boolean useTotalOverride, useFile;
+	private boolean useTotalOverride, useFile; 
 	private double multiplierTotal, multiplierFriction, multiplierPressure, multiplierBase;	
-	//private String fileName;
 	private FlightConditions conditions;
-	private List<CDrec> cdOverride;
-	private Integer maxVelIndex;
+	//private List<CDrec> cdOverride;
+	private List<CDrec> cdThrust, cdCoast;
+	//private Integer maxVelIndex;
 	
 	public CDoverrideSimulationListener(boolean useFile,
-			//String fileName,
 			boolean useTotalOverride,
 			double multiplierTotal, 
 			double multiplierFriction, 
 			double multiplierPressure, 
 			double multiplierBase,
-			List<CDrec> cdOverride,
-			int maxVelIndex) {
+			//List<CDrec> cdOverride,
+			//int maxVelIndex,
+			List<CDrec> cdThrust,
+			List<CDrec> cdCoast) {
 		super();
 		this.useFile = useFile;
-		//this.fileName = fileName;
 		this.useTotalOverride = useTotalOverride;
 		this.multiplierTotal = multiplierTotal;
 		this.multiplierFriction = multiplierFriction;
 		this.multiplierPressure = multiplierPressure;
 		this.multiplierBase = multiplierBase;
-		this.cdOverride = cdOverride;
-		this.maxVelIndex = maxVelIndex;
+		//this.cdOverride = cdOverride;
+		//this.maxVelIndex = maxVelIndex;		
+		this.cdThrust = cdThrust;
+		this.cdCoast = cdCoast;
 		// Note conditions is initialized by postFlightConditions which must be called before postAerodynamicCalculation
 	}
 	
@@ -66,7 +68,7 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 		
 		if (useFile) {
 
-			if (cdOverride.isEmpty()) {
+			if (cdThrust.isEmpty() || cdCoast.isEmpty()) {
 				log.error("CD Override list is not loaded");
 				throw new BugException("CD Override list is not loaded");
 			}
@@ -93,55 +95,11 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 					break; //exit for loop as no need to continue checking
 				}
 			}
-			
-			Integer minIndex;
-			Integer maxIndex;
-			int j = 0;
-			
+				
 			if (isMotorActive) {
-				minIndex = 0;
-				maxIndex = maxVelIndex;
-				for (j = minIndex; j <= maxIndex; j++) {
-					if (mach <= cdOverride.get(j).MACH) {
-						break;
-					}
-				}
-				if (j>maxIndex) {
-					//Velocity larger than override dataset so do not change CD
-				} else {
-					if (j==minIndex && mach < cdOverride.get(j).MACH) {
-						//Velocity smaller than override dataset so do not change CD
-					} else {
-						if (mach == cdOverride.get(j).MACH) {
-							forces = updateCD(forces, cdOverride.get(j).CD);
-						} else {
-							double newCD = deriveCD(cdOverride.get(j-1).CD, cdOverride.get(j).CD, cdOverride.get(j-1).MACH, cdOverride.get(j).MACH, mach);
-							forces = updateCD(forces, newCD);
-						}
-					}					
-				}	
+				forces = updateCD (cdThrust, mach, forces);
 			} else {
-				minIndex = maxVelIndex;
-				maxIndex = cdOverride.size() - 1;
-				for (j = minIndex; j <= maxIndex; j++) {
-					if (mach >= cdOverride.get(j).MACH) {
-						break;
-					}
-				}
-				if (j>maxIndex) {
-					//Velocity smaller than override dataset so do not change CD
-				} else {
-					if (j==minIndex && mach > cdOverride.get(j).MACH) {
-						//Velocity larger than override dataset so do not change CD
-					} else {
-						if (mach == cdOverride.get(j).MACH) {
-							forces = updateCD(forces, cdOverride.get(j).CD);
-						} else {
-							double newCD = deriveCD(cdOverride.get(j-1).CD, cdOverride.get(j).CD, cdOverride.get(j-1).MACH, cdOverride.get(j).MACH, mach);
-							forces = updateCD(forces, newCD);
-						}
-					}					
-				}				
+				forces = updateCD (cdCoast, mach, forces);				
 			}
 			
 		} else {
@@ -162,6 +120,35 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 		return forces;
 	}
 	
+	private AerodynamicForces updateCD (List<CDrec> cdOverride, double mach, AerodynamicForces forces) {
+		int j;
+		int minIndex = 0;
+		int maxIndex = cdOverride.size() - 1;
+		
+		for (j = minIndex; j <= maxIndex; j++) {
+			if (mach <= cdOverride.get(j).MACH) {
+				break;
+			}
+		}
+		
+		if (j>maxIndex) {
+			//Velocity larger than override dataset so do not change CD
+		} else {
+			if (j==minIndex && mach < cdOverride.get(j).MACH) {
+				//Velocity smaller than override dataset so do not change CD
+			} else {
+				if (mach == cdOverride.get(j).MACH) {
+					forces = updateForces(forces, cdOverride.get(j).CD);
+				} else {
+					double newCD = deriveCD(cdOverride.get(j-1).CD, cdOverride.get(j).CD, cdOverride.get(j-1).MACH, cdOverride.get(j).MACH, mach);
+					forces = updateForces(forces, newCD);
+				}
+			}					
+		}
+		
+		return forces;
+	}
+	
 	private double deriveCD(double cd1, double cd2, double mach1, double mach2, double newMach) {
 		double cdDelta = cd2 - cd1;
 		double machDelta = mach2 - mach1;
@@ -172,7 +159,7 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 		return newCD;
 	}
 	
-	private AerodynamicForces updateCD(AerodynamicForces forces, double newCD) {
+	private AerodynamicForces updateForces(AerodynamicForces forces, double newCD) {
 		double updateRatio = newCD / forces.getCD();
 		
 		forces.setFrictionCD(forces.getFrictionCD() * updateRatio);

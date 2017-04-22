@@ -30,7 +30,7 @@ public final class CDLoaderHelper {
 	 * @param target	the file to load.
 	 * @return			a list of all motors in the file/directory.
 	 */
-	public static List<CDrec> load(File target, Window parent) {
+	public static List<CDrec> load(File target, Window parent, boolean isSimulationFile) {
 		//CDFileLoader loader = new CDFileLoader();
 
 		if (target.isDirectory()) {
@@ -46,7 +46,7 @@ public final class CDLoaderHelper {
 			InputStream is = null;
 			try {
 				is = new FileInputStream(target);
-				return load(new BufferedInputStream(is), target.getName(), parent);
+				return load(new BufferedInputStream(is), target.getName(), parent, isSimulationFile);
 			} catch (IOException e) {
 				log.warn("Could not load file " + target, e);
 				JOptionPane.showMessageDialog(parent
@@ -67,10 +67,10 @@ public final class CDLoaderHelper {
 		}
 	}
 
-	public static List<CDrec> load( InputStream is, String fileName, Window parent) {
+	public static List<CDrec> load( InputStream is, String fileName, Window parent, boolean isSimulationFile) {
 		CDLoader loader = new CDFileLoader();
 		try {
-			List<CDrec> cd = loader.load(is, fileName);
+			List<CDrec> cd = loader.load(is, fileName, isSimulationFile);
 			if (cd.size() == 0) {
 				log.warn("No entries found in file " + fileName);
 				JOptionPane.showMessageDialog(parent

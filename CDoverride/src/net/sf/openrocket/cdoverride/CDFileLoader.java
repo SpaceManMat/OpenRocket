@@ -26,8 +26,8 @@ public class CDFileLoader implements CDLoader {
 	}
 	
 	@Override
-	public List<CDrec> load(InputStream stream, String filename) throws IOException {
-		return load(new InputStreamReader(stream, getDefaultCharset()), filename);
+	public List<CDrec> load(InputStream stream, String filename, boolean isSimulationFile) throws IOException {
+		return load(new InputStreamReader(stream, getDefaultCharset()), filename, isSimulationFile);
 	}
 	
 	/**
@@ -37,7 +37,7 @@ public class CDFileLoader implements CDLoader {
 	 * @return		  a list of the {@link CDrec} objects defined in the file.
 	 * @throws IOException  if an I/O error occurs or if the file format is illegal.
 	 */
-	public List<CDrec> load(Reader reader, String filename) throws IOException {
+	public List<CDrec> load(Reader reader, String filename, boolean isSimulationFile) throws IOException {
 		
 		BufferedReader in = new BufferedReader(reader);
 				
@@ -76,9 +76,14 @@ public class CDFileLoader implements CDLoader {
 								} else {
 									acceleratingNext = false;
 								}
-								// Check that data does not start accelerating again after decelerating
-								if (acceleratingNext && !acceleratingPrev) {
-									throw new IOException("File data out of order.");
+								if (isSimulationFile) { // For Simulator file make sure it does not accelerate after decelerating
+									if (acceleratingNext && !acceleratingPrev) {
+										throw new IOException("File data out of order.");
+									}
+								} else { // Expect on one curve so must always accelerate
+									if (!acceleratingNext) {
+										throw new IOException("File data out of order.");
+									}									
 								}
 								
 								cd.add(new CDrec(machNext,cdNext,acceleratingNext));
@@ -119,5 +124,12 @@ public class CDFileLoader implements CDLoader {
 		if (pieces.length == 0 || !pieces[0].equals(""))
 			return pieces;
 		return ArrayUtils.copyOfRange(pieces, 1, pieces.length);
+	}
+
+	@Override
+	public List<net.sf.openrocket.cdoverride.CDrec> load(InputStream stream,
+			String filename) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

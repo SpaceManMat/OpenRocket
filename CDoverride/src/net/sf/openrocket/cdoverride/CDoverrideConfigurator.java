@@ -3,10 +3,12 @@ package net.sf.openrocket.cdoverride;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -56,23 +58,26 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 	
 	private JLabel labelCDtotal, labelCDfriction, labelCDpressure, labelCDbase;
 	private JSpinner spinCDtotal, spinCDfriction, spinCDpressure, spinCDbase;
+	private JCheckBox checkSimulationFile;
 	private UnitSelector unitCDtotal, unitCDfriction, unitCDpressure, unitCDbase;
 	private BasicSlider sliderCDtotal, sliderCDfriction, sliderCDpressure, sliderCDbase; 
-	private StringModel smFileName;
+	private JTextField fileName;
 	private JButton fileBtn, loadBtn;
 	
 	@Override
 	protected JComponent getConfigurationComponent(final CDoverride extension, Simulation simulation, final JPanel panel) {
 		
-		JLabel overrideMethod = new JLabel("CD Override Method:");
-		panel.add(overrideMethod);
+		//// CD Override Method Subsection	
+		JPanel sub1 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
+		sub1.setBorder(BorderFactory.createTitledBorder("CD Override Method"));
+		panel.add(sub1,  "growx, split 2, aligny 0, flowy, gapright para, wrap");
 		
 		final StringModel selected = new StringModel(extension, "SelectedOption");
 		String[] optionList = { "Multiplier", "Separate Multipliers", "Data File" };
 		
 		final JComboBox OverrideOption = new JComboBox(optionList);
 		OverrideOption.setEditable(false);
-		OverrideOption.setSelectedItem(selected);
+		OverrideOption.getModel().setSelectedItem(selected.getValue());
 		OverrideOption.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -81,139 +86,91 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 				setEnabledSub(extension, s);
 			}
 		});
-		panel.add(OverrideOption, "span, wrap rel");
+		sub1.add(OverrideOption, "w 120lp!, wrap");
 		
-		
-		//// CD Override by Multiplier 
-		JPanel sub1 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
-		sub1.setBorder(BorderFactory.createTitledBorder("CD Override by Multiplier"));
-		//useFileCheck.addEnableComponent(sub2, false);
-		panel.add(sub1, "growx, split 2, aligny 0, flowy, gapright para");
-			
-		//BooleanModel useTotalOverrideCheck = new BooleanModel(extension, "UseTotalOverride");
-		//J/CheckBox check2 = new JCheckBox(useTotalOverrideCheck);
-		//check2.setText("Use Total CD Override");
-		//useFileCheck.addEnableComponent(check2, false);
-		//sub1.add(check2, "spanx, wrap unrel");
-			
+		//// CD Override by Total Multiplier Subsection	
+		JPanel sub2 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
+		sub2.setBorder(BorderFactory.createTitledBorder("CD Override by Multiplier"));
+		panel.add(sub2,  "growx, split 2, aligny 0, flowy, gapright para, wrap");
 		
 		labelCDtotal = new JLabel("CD Total Override:");
-		//useTotalOverrideCheck.addEnableComponent(labelCDtotal, true);
-		//useFileCheck.addEnableComponent(labelCDtotal, false);
-		sub1.add(labelCDtotal);
+		sub2.add(labelCDtotal);
 			
 		DoubleModel m1 = new DoubleModel(extension, "MultiplierTotal", UnitGroup.UNITS_RELATIVE, 0);
 			
 		spinCDtotal = new JSpinner(m1.getSpinnerModel());
 		spinCDtotal.setEditor(new SpinnerEditor(spinCDtotal));
-		//useTotalOverrideCheck.addEnableComponent(spinCDtotal, true);
-		//useFileCheck.addEnableComponent(spinCDtotal, false);
-		sub1.add(spinCDtotal, "w 65lp!");
+		sub2.add(spinCDtotal, "w 65lp!");
 			
 		unitCDtotal = new UnitSelector(m1);
-		//useTotalOverrideCheck.addEnableComponent(unitCDtotal, true);
-		//useFileCheck.addEnableComponent(unitCDtotal, false);
-		sub1.add(unitCDtotal, "w 25");
+		sub2.add(unitCDtotal, "w 25");
 		
 		sliderCDtotal = new BasicSlider(m1.getSliderModel(0, 3));
-		//useTotalOverrideCheck.addEnableComponent(sliderCDtotal, true);
-		//useFileCheck.addEnableComponent(sliderCDtotal, false);
-		sub1.add(sliderCDtotal, "w 75lp, wrap");
+		sub2.add(sliderCDtotal, "w 75lp, wrap");
 			
 			
-		//// CD Override by Separate Multipliers
-		JPanel sub2 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
-		sub2.setBorder(BorderFactory.createTitledBorder("CD Override by Separate Multipliers"));
-		//useFileCheck.addEnableComponent(sub2, false);
-		panel.add(sub2, "growx, split 2, aligny 0, flowy, gapright para");
+		//// CD Override by Separate Multipliers Subsection
+		JPanel sub3 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
+		sub3.setBorder(BorderFactory.createTitledBorder("CD Override by Separate Multipliers"));
+		panel.add(sub3, "growx, split 2, aligny 0, flowy, gapright para, wrap");
 			
 		labelCDfriction = new JLabel("CD Friction Override:");
-		//useTotalOverrideCheck.addEnableComponent(labelCDfriction, false);
-		//useFileCheck.addEnableComponent(labelCDfriction, false);
-		sub2.add(labelCDfriction);
+		sub3.add(labelCDfriction);
 			
 		DoubleModel m2 = new DoubleModel(extension, "MultiplierFriction", UnitGroup.UNITS_RELATIVE, 0);
 			
 		spinCDfriction = new JSpinner(m2.getSpinnerModel());
 		spinCDfriction.setEditor(new SpinnerEditor(spinCDfriction));
-		//useTotalOverrideCheck.addEnableComponent(spinCDfriction, false);
-		//useFileCheck.addEnableComponent(spinCDfriction, false);
-		sub2.add(spinCDfriction, "w 65lp!");
+		sub3.add(spinCDfriction, "w 65lp!");
 		
 		unitCDfriction = new UnitSelector(m2);
-		//useTotalOverrideCheck.addEnableComponent(unitCDfriction, false);
-		//useFileCheck.addEnableComponent(unitCDfriction, false);
-		sub2.add(unitCDfriction, "w 25");
+		sub3.add(unitCDfriction, "w 25");
 			
 		sliderCDfriction = new BasicSlider(m2.getSliderModel(0, 3));
-		//useTotalOverrideCheck.addEnableComponent(sliderCDfriction, false);
-		//useFileCheck.addEnableComponent(sliderCDfriction, false);
-		sub2.add(sliderCDfriction, "w 75lp, wrap");
+		sub3.add(sliderCDfriction, "w 75lp, wrap");
 
 		
 		labelCDpressure = new JLabel("CD Pressure Override:");
-		//useTotalOverrideCheck.addEnableComponent(labelCDpressure, false);
-		//useFileCheck.addEnableComponent(labelCDpressure, false);
-		sub2.add(labelCDpressure);
+		sub3.add(labelCDpressure);
 			
 		DoubleModel m3 = new DoubleModel(extension, "MultiplierPressure", UnitGroup.UNITS_RELATIVE, 0);
 			
 		spinCDpressure = new JSpinner(m3.getSpinnerModel());
 		spinCDpressure.setEditor(new SpinnerEditor(spinCDpressure));
-		//useTotalOverrideCheck.addEnableComponent(spinCDpressure, false);
-		//useFileCheck.addEnableComponent(spinCDpressure, false);
-		sub2.add(spinCDpressure, "w 65lp!");
+		sub3.add(spinCDpressure, "w 65lp!");
 			
 		unitCDpressure = new UnitSelector(m3);
-		//useTotalOverrideCheck.addEnableComponent(unitCDpressure, false);
-		//useFileCheck.addEnableComponent(unitCDpressure, false);
-		sub2.add(unitCDpressure, "w 25");
+		sub3.add(unitCDpressure, "w 25");
 			
 		sliderCDpressure = new BasicSlider(m3.getSliderModel(0, 3));
-		//useTotalOverrideCheck.addEnableComponent(sliderCDpressure, false);
-		//useFileCheck.addEnableComponent(sliderCDpressure, false);
-		sub2.add(sliderCDpressure, "w 75lp, wrap");
+		sub3.add(sliderCDpressure, "w 75lp, wrap");
 
 			
 		labelCDbase = new JLabel("CD Base Override:");
-		//useTotalOverrideCheck.addEnableComponent(labelCDbase, false);
-		//useFileCheck.addEnableComponent(labelCDbase, false);
-		sub2.add(labelCDbase);
+		sub3.add(labelCDbase);
 			
 		DoubleModel m4 = new DoubleModel(extension, "MultiplierBase", UnitGroup.UNITS_RELATIVE, 0);
 			
 		spinCDbase = new JSpinner(m4.getSpinnerModel());
 		spinCDbase.setEditor(new SpinnerEditor(spinCDbase));
-		//useTotalOverrideCheck.addEnableComponent(spinCDbase, false);
-		//useFileCheck.addEnableComponent(spinCDbase, false);
-		sub2.add(spinCDbase, "w 65lp!");
+		sub3.add(spinCDbase, "w 65lp!");
 			
 		unitCDbase = new UnitSelector(m4);
-		//useTotalOverrideCheck.addEnableComponent(unitCDbase, false);
-		//useFileCheck.addEnableComponent(unitCDbase, false);
-		sub2.add(unitCDbase, "w 25");
+		sub3.add(unitCDbase, "w 25");
 			
 		sliderCDbase = new BasicSlider(m4.getSliderModel(0, 3));
-		//useTotalOverrideCheck.addEnableComponent(sliderCDbase, false);
-		//useFileCheck.addEnableComponent(sliderCDbase, false);
-		sub2.add(sliderCDbase, "w 75lp, wrap");	
+		sub3.add(sliderCDbase, "w 75lp, wrap");	
 		
 			
-		// CD Override by File Settings sub3 Panel
-		JPanel sub3 = new JPanel(new MigLayout("fill, gap rel unrel","[grow][65lp!][30lp!][75lp!]", ""));
-		sub3.setBorder(BorderFactory.createTitledBorder("CD Override by File"));
-		panel.add(sub3, "growx, split 2, aligny 0, flowy, gapright para");
-			
-		//BooleanModel useFileCheck = new BooleanModel(extension, "UseFile");
-		//JCheckBox check1 = new JCheckBox(useFileCheck);
-		//check1.setText("Use File to Override CD");
-		//sub3.add(check1, "spanx, wrap unrel");
+		// CD Override by File Settings Subsection
+		JPanel sub4 = new JPanel(new MigLayout("fill, gap rel unrel","[grow][65lp!][30lp!][75lp!]", ""));
+		sub4.setBorder(BorderFactory.createTitledBorder("CD Override by File"));
+		panel.add(sub4, "growx, split 2, aligny 0, flowy, gapright para, wrap");
 		
-		smFileName = new StringModel(extension, "FileName");
+		final StringModel smFileName = new StringModel(extension, "FileName");
 		
-		final JTextField fileName = new  JTextField(smFileName.getValue(), 60);
+		fileName = new  JTextField(smFileName.getValue(), 60);
 		fileName.setEditable(true);
-		//useFileCheck.addEnableComponent(fileName, true);
 		fileName.setCaretPosition(0);
 		GUIUtil.changeFontSize(fileName, -2);
 		fileName.getDocument().addDocumentListener(new DocumentListener() {
@@ -233,10 +190,9 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 				smFileName.setValue(fileName.getText());
 			}
 		});
-		sub3.add(new JScrollPane(fileName), "grow, wrap");
+		sub4.add(new JScrollPane(fileName), "grow, wrap");
 		
 		fileBtn = new JButton("Browse");
-		//useFileCheck.addEnableComponent(fileBtn, true);
 		fileBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -259,11 +215,14 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 			}
 
 		});
-		sub3.add(fileBtn, "w 75lp, wrap");
+		sub4.add(fileBtn, "w 75lp, wrap");
 	
+		final BooleanModel isSimulationFile = new BooleanModel(extension, "IsSimulationFile");
+		checkSimulationFile = new JCheckBox(isSimulationFile);
+		checkSimulationFile.setText("Data is from Simulation export");
+		sub4.add(checkSimulationFile, "spanx, wrap unrel");
 		
 		loadBtn = new JButton("Load File");
-		//useFileCheck.addEnableComponent(fileBtn, true);
 		loadBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -271,21 +230,43 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 						@Override
 						public void run() {
 							File current = new File(fileName.getText());
-							log.info(Markers.USER_MARKER, "Load selected from CDoverride plugin");
-							List<CDrec> cd = CDLoaderHelper.load(current, SwingUtilities.getWindowAncestor(panel));
+							log.info(Markers.USER_MARKER, "Load selected file from CDoverride plugin");
+							List<CDrec> cd = CDLoaderHelper.load(current, SwingUtilities.getWindowAncestor(panel), isSimulationFile.getValue());
 							if (!cd.isEmpty()) {
-								CDCurvePlotDialog CDcurve = new CDCurvePlotDialog(cd, SwingUtilities.getWindowAncestor(panel));
+								CDCurvePlotDialog CDcurve = new CDCurvePlotDialog(cd, SwingUtilities.getWindowAncestor(panel), isSimulationFile.getValue());
 								CDcurve.setVisible(true);
-								extension.setCDoverride(cd);
+								log.info(Markers.USER_MARKER, "Store loaded CDoverride Curves");
+								if (!isSimulationFile.getValue()) { // Duplicate single curve
+									extension.setCDthrust(cd);
+									extension.setCDcoast(cd);
+								} else { // Separate out the 2 curves
+									List<CDrec> cdThrust = new ArrayList<CDrec>();
+									List<CDrec> cdCoast = new ArrayList<CDrec>();
+									int maxVelIndex = 0;			
+									
+									for (int j = 0; j < cd.size(); j++) {
+										if (!cd.get(j).THRUSTING) {
+											maxVelIndex = j - 1;
+											break;
+										}
+										cdThrust.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+									}
+									for (int j = cd.size()-1; j >= maxVelIndex; j--) {
+										cdCoast.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+									}
+									
+									extension.setCDthrust(cdThrust);
+									extension.setCDcoast(cdCoast);
+								}
 							}
 						}
 					});
 			}
 
 		});
-		sub3.add(loadBtn);
+		sub4.add(loadBtn);
 		
-		//Initalise Enabled/Disabled Items
+		//Initalise Enabled/Disabled Items based on selected option
 		setEnabledSub(extension, selected.getValue());
 		
 		return panel;
@@ -303,6 +284,7 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 				useCDfile = true;
 			}
 		}
+		
 		labelCDtotal.setEnabled(useCDtotal);
 		spinCDtotal.setEnabled(useCDtotal);
 		unitCDtotal.setEnabled(useCDtotal);
@@ -321,8 +303,9 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 		unitCDbase.setEnabled(useCDmultiplier3);
 		sliderCDbase.setEnabled(useCDmultiplier3); 
 		
-		smFileName.setEnabled(useCDfile);
+		fileName.setEnabled(useCDfile);
 		fileBtn.setEnabled(useCDfile);
+		checkSimulationFile.setEnabled(useCDfile);
 		loadBtn.setEnabled(useCDfile);
 		
 		BooleanModel useTotalOverrideCheck = new BooleanModel(extension, "UseTotalOverride");
