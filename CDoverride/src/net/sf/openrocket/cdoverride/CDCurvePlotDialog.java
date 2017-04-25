@@ -27,6 +27,7 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+@SuppressWarnings("serial")
 public class CDCurvePlotDialog extends JDialog {
 	private static final Translator trans = Application.getTranslator();
 	
@@ -71,24 +72,40 @@ public class CDCurvePlotDialog extends JDialog {
 		renderer.setBaseShapesFilled(false);
 		plot.setRenderer(renderer);
 		
+		// Check to see how many Thrust and Coast entries in data
+		int cntThrustEnrty = 0;
+		int cntCoastEnrty = 0;
+		for (int j = 0; j < CDrec.size(); j++) {
+			if (CDrec.get(j).THRUSTING) {
+				cntThrustEnrty++;
+			} else {
+				cntCoastEnrty++;				
+			}
+		}
 
 		// Create the plot data set
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		
-		if (isSimulationFile) { // For a simulation file there are separate Thrusting and Coasting curves
+		// For a simulation file there are separate Thrusting and Coasting curves
+		// For other files they are optional, if both are present the label separately
+		if (isSimulationFile || (cntThrustEnrty > 0 && cntCoastEnrty > 0) ) { 
 			dataset.addSeries(generateSeries(CDrec, true, "CD Thrusting"));
-		} else {
-			dataset.addSeries(generateSeries(CDrec, true, "CD Override"));
-		}
-		renderer.setSeriesStroke(1, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-		renderer.setSeriesPaint(1, ThrustCurveMotorSelectionPanel.getColor(1));
-		renderer.setSeriesShape(1, new Rectangle());
-
-		if (isSimulationFile) {
+			renderer.setSeriesStroke(1, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+			renderer.setSeriesPaint(1, ThrustCurveMotorSelectionPanel.getColor(1));
+			renderer.setSeriesShape(1, new Rectangle());
 			dataset.addSeries(generateSeries(CDrec, false, "CD Coasting"));
 			renderer.setSeriesStroke(2, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
 			renderer.setSeriesPaint(2, ThrustCurveMotorSelectionPanel.getColor(2));
 			renderer.setSeriesShape(2, new Rectangle());
+		} else { // Only one curve present, do not the label separately as it will be duplicated to both curve types
+			if (cntThrustEnrty > 0) {
+				dataset.addSeries(generateSeries(CDrec, true, "CD Override"));
+			} else {
+				dataset.addSeries(generateSeries(CDrec, false, "CD Override"));
+			}
+			renderer.setSeriesStroke(1, new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+			renderer.setSeriesPaint(1, ThrustCurveMotorSelectionPanel.getColor(1));
+			renderer.setSeriesShape(1, new Rectangle());		
 		}
 			
 		plot.setDataset(dataset);

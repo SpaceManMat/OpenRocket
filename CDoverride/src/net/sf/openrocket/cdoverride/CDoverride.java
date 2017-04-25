@@ -22,13 +22,17 @@ public class CDoverride extends AbstractSimulationExtension {
 	
 	@Override
 	public String getName() {
-		return "CD Override v2.01";
+		return "CD Override v" + getVersionNumber();
+	}
+	
+	static public String getVersionNumber() {
+		return "2.02";
 	}
 	
 	@Override
 	public String getDescription() {
-		// This description is shown when the user clicks the info-button on the extension
-		return "This extension overrides the calculated CD based on user input";
+		// This description is shown when the user clicks the info-button on the extension	
+		return "Overrides the calculated CD based on user input.";
 	}
 	
 	@Override
@@ -39,8 +43,6 @@ public class CDoverride extends AbstractSimulationExtension {
 				getMultiplierFriction(),
 				getMultiplierPressure(),
 				getMultiplierBase(),
-				//getCDoverride(),
-				//getMaxVelIndex(),
 				getCDthrust(),
 				getCDcoast()));	
 	}
@@ -183,53 +185,6 @@ public class CDoverride extends AbstractSimulationExtension {
 		config.put("cdCoast", cd);
 		fireChangeEvent();
 	}
-	
-
-//	public List<CDrec> getCDoverride() {
-//		List<CDrec> cdOverride = new ArrayList<CDrec>();
-//		@SuppressWarnings("unchecked")
-//		List<Double> mach = (List<Double>) config.getList("machOverride", new ArrayList<Double>());
-//		@SuppressWarnings("unchecked")
-//		List<Double> cd = (List<Double>) config.getList("cdOverride", new ArrayList<Double>());
-//		@SuppressWarnings("unchecked")
-//		List<Boolean> accelerating = (List<Boolean>) config.getList("acceleratingOverride", new ArrayList<Boolean>());
-//		
-//		for (int j = 0; j < mach.size(); j++) {
-//			cdOverride.add(new CDrec(mach.get(j), cd.get(j), accelerating.get(j)));
-//		}
-//		
-//		return cdOverride;
-//	}
-//	
-//	public int getMaxVelIndex() {
-//		return config.getInt("maxVelIndex", 0);
-//	}
-//	
-//	public void setCDoverride(List<CDrec> cdOverride) {
-//		List<Double> mach = new ArrayList<Double>();
-//		List<Double> cd = new ArrayList<Double>();
-//		List<Boolean> accelerating = new ArrayList<Boolean>();
-//		Boolean acceleratingNext = true;
-//		Boolean acceleratingPrev = false;
-//		int maxVelIndex = 0;
-//		
-//		for (int j = 0; j < cdOverride.size(); j++) {
-//			mach.add(cdOverride.get(j).MACH);
-//			cd.add(cdOverride.get(j).CD);
-//			acceleratingNext = cdOverride.get(j).ACCELERATING;
-//			if (acceleratingPrev && !acceleratingNext) {
-//				maxVelIndex = j - 1;
-//			}
-//			accelerating.add(acceleratingNext);
-//			acceleratingPrev = acceleratingNext;
-//		}
-//				
-//		config.put("machOverride", mach);
-//		config.put("cdOverride", cd);
-//		config.put("acceleratingOverride", accelerating);
-//		config.put("maxVelIndex", maxVelIndex);
-//		fireChangeEvent();
-//	}
 	
 	public boolean getIsSimulationFile() {
 		return config.getBoolean("IsSimulationFile", false);

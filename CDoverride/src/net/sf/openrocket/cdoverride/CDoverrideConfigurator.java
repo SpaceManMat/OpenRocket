@@ -33,6 +33,7 @@ import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.gui.main.BasicFrame;
 import net.sf.openrocket.gui.util.GUIUtil;
+import net.sf.openrocket.gui.util.Icons;
 import net.sf.openrocket.gui.util.SwingPreferences;
 import net.sf.openrocket.logging.Markers;
 import net.sf.openrocket.plugin.Plugin;
@@ -75,6 +76,7 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 		final StringModel selected = new StringModel(extension, "SelectedOption");
 		String[] optionList = { "Multiplier", "Separate Multipliers", "Data File" };
 		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		final JComboBox OverrideOption = new JComboBox(optionList);
 		OverrideOption.setEditable(false);
 		OverrideOption.getModel().setSelectedItem(selected.getValue());
@@ -86,7 +88,19 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 				setEnabledSub(extension, s);
 			}
 		});
-		sub1.add(OverrideOption, "w 120lp!, wrap");
+		sub1.add(OverrideOption, "w 120lp!");
+		
+		final JButton helpBtn = new JButton("Help");
+		helpBtn.setIcon(Icons.HELP_ABOUT);
+		helpBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				log.info(Markers.USER_MARKER, "About selected");
+				new HelpDialog(SwingUtilities.getWindowAncestor(helpBtn)).setVisible(true);
+			}
+		});
+		sub1.add(helpBtn, "w 75lp, skip 2, wrap");
+		
 		
 		//// CD Override by Total Multiplier Subsection	
 		JPanel sub2 = new JPanel(new MigLayout("fill, gap rel unrel", "[grow][65lp!][30lp!][75lp!]", ""));
@@ -219,7 +233,7 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 	
 		final BooleanModel isSimulationFile = new BooleanModel(extension, "IsSimulationFile");
 		checkSimulationFile = new JCheckBox(isSimulationFile);
-		checkSimulationFile.setText("Data is from Simulation export");
+		checkSimulationFile.setText("File is in Simulation Extract order");
 		sub4.add(checkSimulationFile, "spanx, wrap unrel");
 		
 		loadBtn = new JButton("Load File");
@@ -235,29 +249,7 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 							if (!cd.isEmpty()) {
 								CDCurvePlotDialog CDcurve = new CDCurvePlotDialog(cd, SwingUtilities.getWindowAncestor(panel), isSimulationFile.getValue());
 								CDcurve.setVisible(true);
-								log.info(Markers.USER_MARKER, "Store loaded CDoverride Curves");
-								if (!isSimulationFile.getValue()) { // Duplicate single curve
-									extension.setCDthrust(cd);
-									extension.setCDcoast(cd);
-								} else { // Separate out the 2 curves
-									List<CDrec> cdThrust = new ArrayList<CDrec>();
-									List<CDrec> cdCoast = new ArrayList<CDrec>();
-									int maxVelIndex = 0;			
-									
-									for (int j = 0; j < cd.size(); j++) {
-										if (!cd.get(j).THRUSTING) {
-											maxVelIndex = j - 1;
-											break;
-										}
-										cdThrust.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
-									}
-									for (int j = cd.size()-1; j >= maxVelIndex; j--) {
-										cdCoast.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
-									}
-									
-									extension.setCDthrust(cdThrust);
-									extension.setCDcoast(cdCoast);
-								}
+								storeCDcurve(extension, cd, isSimulationFile.getValue());
 							}
 						}
 					});
@@ -315,4 +307,53 @@ public class CDoverrideConfigurator extends AbstractSwingSimulationExtensionConf
 		useFileCheck.setValue(useCDfile);
 	}
 	
+	private void storeCDcurve(CDoverride extension, List<CDrec> cd, boolean isSimulationFile) {
+		log.info(Markers.USER_MARKER, "Store loaded CDoverride Curves");
+		List<CDrec> cdThrust = new ArrayList<CDrec>();
+		List<CDrec> cdCoast = new ArrayList<CDrec>();
+		
+		if (!isSimulationFile) { 
+			// Normal file may contain Coast Curve or Thrust Curve or Both (in either order)
+			// If only one curve then duplicate from the other 
+				
+			for (int j = 0; j < cd.size(); j++) {
+				if (cd.get(j).THRUSTING) {
+					cdThrust.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+				} else {
+					cdCoast.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+				}
+			}
+			
+			if (cdThrust.size() > 0) {
+				extension.setCDthrust(cdThrust);
+			} else {
+				extension.setCDthrust(cdCoast); //No Thrust Curve in file so copy from Coast
+			}
+			if (cdCoast.size() > 0) {
+				extension.setCDcoast(cdCoast);
+			} else {
+				extension.setCDcoast(cdThrust); //No Coast Curve in file so copy from Thrust
+			}			
+			
+		} else { 
+			// For simulation file separate out the 2 curves - Thrust followed by Coast (in decelerating order)
+			int maxVelIndex = 0;			
+		
+			for (int j = 0; j < cd.size(); j++) {
+				if (!cd.get(j).THRUSTING) { //End of Thrust Curve
+					maxVelIndex = j - 1;
+					break;
+				}
+				cdThrust.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+			}
+			
+			// Start at end of Coast curve and go back to Max Velocity
+			for (int j = cd.size()-1; j >= maxVelIndex; j--) {
+				cdCoast.add(new CDrec(cd.get(j).MACH, cd.get(j).CD));	
+			}
+		
+			extension.setCDthrust(cdThrust);
+			extension.setCDcoast(cdCoast);
+		}
+	}
 }

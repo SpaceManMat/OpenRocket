@@ -29,9 +29,7 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 	private boolean useTotalOverride, useFile; 
 	private double multiplierTotal, multiplierFriction, multiplierPressure, multiplierBase;	
 	private FlightConditions conditions;
-	//private List<CDrec> cdOverride;
 	private List<CDrec> cdThrust, cdCoast;
-	//private Integer maxVelIndex;
 	
 	public CDoverrideSimulationListener(boolean useFile,
 			boolean useTotalOverride,
@@ -39,8 +37,6 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 			double multiplierFriction, 
 			double multiplierPressure, 
 			double multiplierBase,
-			//List<CDrec> cdOverride,
-			//int maxVelIndex,
 			List<CDrec> cdThrust,
 			List<CDrec> cdCoast) {
 		super();
@@ -49,9 +45,7 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 		this.multiplierTotal = multiplierTotal;
 		this.multiplierFriction = multiplierFriction;
 		this.multiplierPressure = multiplierPressure;
-		this.multiplierBase = multiplierBase;
-		//this.cdOverride = cdOverride;
-		//this.maxVelIndex = maxVelIndex;		
+		this.multiplierBase = multiplierBase;	
 		this.cdThrust = cdThrust;
 		this.cdCoast = cdCoast;
 		// Note conditions is initialized by postFlightConditions which must be called before postAerodynamicCalculation
@@ -132,16 +126,28 @@ public class CDoverrideSimulationListener extends AbstractSimulationListener {
 		}
 		
 		if (j>maxIndex) {
-			//Velocity larger than override dataset so do not change CD
+			//Velocity larger than override dataset so derive CD from last 2 entries
+			if (maxIndex > 0) { //Need minimum 2 entries to derive the CD
+				double newCD = deriveCD(cdOverride.get(maxIndex-1).CD, cdOverride.get(maxIndex).CD, cdOverride.get(maxIndex-1).MACH, cdOverride.get(maxIndex).MACH, mach);
+				log.warn("Mach " + mach + " is larger than supplied CD Curve. Extrapolated CD value " + newCD);
+				forces = updateForces(forces, newCD);
+			}
 		} else {
 			if (j==minIndex && mach < cdOverride.get(j).MACH) {
-				//Velocity smaller than override dataset so do not change CD
+				//Velocity smaller than override dataset so derive CD from first 2 entries
+				if (maxIndex > 0) { //Need minimum 2 entries to derive the CD
+					double newCD = deriveCD(cdOverride.get(0).CD, cdOverride.get(1).CD, cdOverride.get(0).MACH, cdOverride.get(1).MACH, mach);
+					log.warn("Mach " + mach + " is smaller than supplied CD Curve. Extrapolated CD value " + newCD);
+					forces = updateForces(forces, newCD);
+				}
 			} else {
 				if (mach == cdOverride.get(j).MACH) {
 					forces = updateForces(forces, cdOverride.get(j).CD);
 				} else {
-					double newCD = deriveCD(cdOverride.get(j-1).CD, cdOverride.get(j).CD, cdOverride.get(j-1).MACH, cdOverride.get(j).MACH, mach);
-					forces = updateForces(forces, newCD);
+					if (maxIndex > 0) { //Need minimum 2 entries to derive the CD
+						double newCD = deriveCD(cdOverride.get(j-1).CD, cdOverride.get(j).CD, cdOverride.get(j-1).MACH, cdOverride.get(j).MACH, mach);
+						forces = updateForces(forces, newCD);
+					}
 				}
 			}					
 		}

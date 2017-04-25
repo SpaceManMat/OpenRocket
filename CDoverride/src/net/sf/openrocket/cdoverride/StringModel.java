@@ -38,6 +38,7 @@ import net.sf.openrocket.util.StateChangeListener;
  * the method {@link #addEnableComponent(Component, String)}.
  * 
  */
+@SuppressWarnings("serial")
 public class StringModel extends AbstractAction implements StateChangeListener, Invalidatable {
 	private static final Logger log = LoggerFactory.getLogger(StringModel.class);
 	
