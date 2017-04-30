@@ -9,6 +9,9 @@ Compiling and usage
 
 Compile by running `ant` script build.xml.  This creates the file `CDoverride.jar`.  Copy this to the OpenRocket plugin directory (`~/.openrocket/Plugins/` on Linux, `~/Library/Application Support/OpenRocket/Plugins/` on Mac, `...\Application Data\OpenRocket\ThrustCurves\Plugins\` on Windows).  Then restart OpenRocket.
 
+Version CD Override version 1.00 to 2.02 tested with OpenRocket version 15.03
+Version CD Override version 2.03 will require OpenRocket version TBA
+
 You can add and configure it in the simulation edit dialog under Simulation options -> Add extension -> Flight -> CD Override.
 
 There are 3 options to override. 

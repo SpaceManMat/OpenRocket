@@ -31,7 +31,6 @@ public final class CDLoaderHelper {
 	 * @return			a list of all motors in the file/directory.
 	 */
 	public static List<CDrec> load(File target, Window parent, boolean isSimulationFile) {
-		//CDFileLoader loader = new CDFileLoader();
 
 		if (target.isDirectory()) {
 			log.warn("Could not load file " + target, "Error: Directory was specified");

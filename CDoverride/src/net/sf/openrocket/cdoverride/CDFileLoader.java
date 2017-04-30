@@ -13,7 +13,8 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.openrocket.util.ArrayUtils;
+//import net.sf.openrocket.util.ArrayUtils;
+import net.sf.openrocket.file.motor.AbstractMotorLoader;
 
 public class CDFileLoader implements CDLoader {
 	
@@ -68,7 +69,7 @@ public class CDFileLoader implements CDLoader {
 			// Read the data from file
 			for (line = in.readLine(); (line != null); line = in.readLine()) {
 				
-				buf = split(line);
+				buf = AbstractMotorLoader.split(line);
 				if (buf.length == 0) {
 					continue;
 				} else if (buf.length == 2) {
@@ -151,29 +152,27 @@ public class CDFileLoader implements CDLoader {
 		return cd;
 	}
 		
-	// Copied from net.sf.openrocket.file.motor;
-	/**
-	 * Helper method to tokenize a string using whitespace as the delimiter.
-	 */
-	protected static String[] split(String str) {
-		return split(str, "\\s+");
-	}
-	
-	
-	/**
-	 * Helper method to tokenize a string using the given delimiter.
-	 */
-	protected static String[] split(String str, String delim) {
-		String[] pieces = str.split(delim);
-		if (pieces.length == 0 || !pieces[0].equals(""))
-			return pieces;
-		return ArrayUtils.copyOfRange(pieces, 1, pieces.length);
-	}
+//	// Copied from net.sf.openrocket.file.motor;
+//	/**
+//	 * Helper method to tokenize a string using whitespace as the delimiter.
+//	 */
+//	protected static String[] split(String str) {
+//		return split(str, "\\s+");
+//	}
+//	
+//	
+//	/**
+//	 * Helper method to tokenize a string using the given delimiter.
+//	 */
+//	protected static String[] split(String str, String delim) {
+//		String[] pieces = str.split(delim);
+//		if (pieces.length == 0 || !pieces[0].equals(""))
+//			return pieces;
+//		return ArrayUtils.copyOfRange(pieces, 1, pieces.length);
+//	}
 
 	@Override
-	public List<net.sf.openrocket.cdoverride.CDrec> load(InputStream stream,
-			String filename) throws IOException {
-		// TODO Auto-generated method stub
+	public List<net.sf.openrocket.cdoverride.CDrec> load(InputStream stream, String filename) throws IOException {
 		return null;
 	}
 }
