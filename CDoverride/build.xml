@@ -1,3 +1,4 @@
+
 <project name="CDoverride" basedir="." default="build">
 
     <property name="src.dir" value="${basedir}/src"/>
@@ -6,7 +7,7 @@
 
     <target name="build">
         <mkdir dir="${build.dir}"/>
-        <javac debug="true" srcdir="${src.dir}" destdir="${build.dir}" classpath="OpenRocket.jar" includeantruntime="false" source="1.6" target="1.6"/>
+        <javac debug="true" srcdir="${src.dir}" destdir="${build.dir}" classpath="OpenRocket.jar" includeantruntime="false" source="1.8" target="1.8"/>
     	<jar destfile="CDoverride.jar" basedir="${build.dir}"/>
     </target>
 
