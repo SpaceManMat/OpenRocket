@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.openrocket.cdoverride.CDLoader;
+//import net.sf.openrocket.cdoverride.CDLoader;
 
 public final class CDLoaderHelper {
 

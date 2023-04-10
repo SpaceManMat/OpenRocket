@@ -16,7 +16,7 @@ import net.sf.openrocket.gui.util.GUIUtil;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.Chars;
-import net.sf.openrocket.cdoverride.CDoverride;
+//import net.sf.openrocket.cdoverride.CDoverride;
 
 @SuppressWarnings("serial")
 public class HelpDialog extends JDialog {
@@ -48,7 +48,7 @@ public class HelpDialog extends JDialog {
 			+ "6. Text lines (other than mentioned above) are ignored, but must not violate the 2 column rule.<br>"
 			+ "7. Blank lines, zero Mach or duplicate Mach entries are ignored.<br><br>"
 			+ "<b>Notes</b><br>"
-			+ "1. If the file does not provide a low enough or high enough Mach entry then the plugin will extrapolate these "
+			+ "1. If the file does not provide a low enough or high enough Mach entry then the plugin will extrapolate the CD "
 			+ "based on the first 2 or last 2 entries of the curve.<br>"
 			+ "2. There is no provision for separate CD curves of multiple stage rockets in the file."
 			+ "</html>";

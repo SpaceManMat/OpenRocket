@@ -26,7 +26,7 @@ public class CDoverride extends AbstractSimulationExtension {
 	}
 	
 	static public String getVersionNumber() {
-		return "2.03";
+		return "3.00";
 	}
 	
 	@Override

@@ -40,7 +40,7 @@ import net.sf.openrocket.plugin.Plugin;
 import net.sf.openrocket.simulation.extension.AbstractSwingSimulationExtensionConfigurator;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.unit.UnitGroup;
-import net.sf.openrocket.cdoverride.CDLoaderHelper;
+//import net.sf.openrocket.cdoverride.CDLoaderHelper;
 
 /**
  * The Swing configuration dialog for the extension.
